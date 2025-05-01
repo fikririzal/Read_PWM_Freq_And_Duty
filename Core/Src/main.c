@@ -69,12 +69,12 @@ float map_float_(float x, float in_min, float in_max, float out_min, float out_m
 
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) {
 	if (htim == &htim2) {
-		if (AS5600.htim->Channel == HAL_TIM_ACTIVE_CHANNEL_2) {
-			AS5600.capVal2 = AS5600.htim->Instance->CCR2; // get signal rising counter
+		if (htim2.Channel == HAL_TIM_ACTIVE_CHANNEL_2) {
+			AS5600.capVal2 = htim2.Instance->CCR2; // get signal rising counter
 			if (AS5600.capVal2) {
 				AS5600.freq = (SystemCoreClock
-						/ (AS5600.htim->Instance->PSC + 1)) / (AS5600.capVal2); //calculate freq with sysclock devide with htim psc
-				AS5600.capVal1 = AS5600.htim->Instance->CCR1; //get signal falling counter
+						/ (htim2.Instance->PSC + 1)) / (AS5600.capVal2); //calculate freq with sysclock devide with htim psc
+				AS5600.capVal1 = htim2.Instance->CCR1; //get signal falling counter
 				AS5600.dutyCycle = 10000
 						- (10000 * AS5600.capVal1 / AS5600.capVal2);
 			}
@@ -115,8 +115,8 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-  HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1);
   HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_2);
+  HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -124,6 +124,8 @@ int main(void)
   while (1)
   {
 	  AS5600_deg = map_float_((float)AS5600.dutyCycle, 0.0f, 10000.0f, 0.0f, 360.0f);
+	  HAL_GPIO_TogglePin(led_GPIO_Port, led_Pin);
+	  HAL_Delay(100);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -250,10 +252,22 @@ static void MX_TIM2_Init(void)
   */
 static void MX_GPIO_Init(void)
 {
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(led_GPIO_Port, led_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : led_Pin */
+  GPIO_InitStruct.Pin = led_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(led_GPIO_Port, &GPIO_InitStruct);
 
 }
 
