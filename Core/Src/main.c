@@ -79,7 +79,7 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) {
 						- (10000 * AS5600.capVal1 / AS5600.capVal2);
 			}
 
-			AS5600_deg = map_float_((float)AS5600.dutyCycle, 0.0f, 10000.0f, 0.0f, 360.0f);
+
 		}
 	}
 }
@@ -123,6 +123,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  AS5600_deg = map_float_((float)AS5600.dutyCycle, 0.0f, 10000.0f, 0.0f, 360.0f);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
